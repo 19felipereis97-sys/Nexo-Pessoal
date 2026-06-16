@@ -278,74 +278,78 @@ export function CalendarClient({ initialEvents, projects, highlightId }: Calenda
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-hidden">
+    <div className="flex flex-col gap-3 lg:h-full lg:overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap shrink-0">
-        {/* Nav */}
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => calHandle.current?.prev()}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] text-[#737373] hover:border-[#333] hover:text-[#f5f5f5] transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => calHandle.current?.today()}
-            className="rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#333] hover:text-[#f5f5f5] transition-colors"
-          >
-            Hoje
-          </button>
-          <button
-            type="button"
-            onClick={() => calHandle.current?.next()}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] text-[#737373] hover:border-[#333] hover:text-[#f5f5f5] transition-colors"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Title */}
-        <h2 className="flex-1 text-base font-semibold capitalize text-[#e5e5e5]">{viewTitle}</h2>
-
-        {/* View switcher */}
-        <div className="flex items-center rounded-lg border border-[#1f1f1f] bg-[#080808] p-0.5 gap-0.5">
-          {VIEWS.map((v) => (
+      <div className="flex flex-col gap-2 shrink-0 sm:flex-row sm:items-center sm:gap-3">
+        {/* Row 1 mobile: Nav + Title */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1 shrink-0">
             <button
-              key={v}
               type="button"
-              onClick={() => switchView(v)}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                view === v
-                  ? 'bg-[#1a1a1a] text-[#f5f5f5]'
-                  : 'text-[#525252] hover:text-[#a3a3a3]',
-              )}
+              onClick={() => calHandle.current?.prev()}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] text-[#737373] hover:border-[#333] hover:text-[#f5f5f5] transition-colors"
             >
-              {VIEW_LABEL[v]}
+              <ChevronLeft className="h-4 w-4" />
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => calHandle.current?.today()}
+              className="rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#333] hover:text-[#f5f5f5] transition-colors"
+            >
+              Hoje
+            </button>
+            <button
+              type="button"
+              onClick={() => calHandle.current?.next()}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] text-[#737373] hover:border-[#333] hover:text-[#f5f5f5] transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          <h2 className="flex-1 min-w-0 truncate text-base font-semibold capitalize text-[#e5e5e5]">{viewTitle}</h2>
         </div>
 
-        <Button variant="accent" size="sm" onClick={openCreate}>
-          <Plus className="h-3.5 w-3.5" />
-          Compromisso
-        </Button>
+        {/* Row 2 mobile: View switcher + Add button */}
+        <div className="flex items-center gap-2 sm:ml-auto shrink-0">
+          <div className="flex items-center rounded-lg border border-[#1f1f1f] bg-[#080808] p-0.5 gap-0.5">
+            {VIEWS.map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => switchView(v)}
+                className={cn(
+                  'px-2.5 py-1.5 rounded-md text-xs font-medium transition-all',
+                  view === v
+                    ? 'bg-[#1a1a1a] text-[#f5f5f5]'
+                    : 'text-[#525252] hover:text-[#a3a3a3]',
+                )}
+              >
+                {VIEW_LABEL[v]}
+              </button>
+            ))}
+          </div>
+
+          <Button variant="accent" size="sm" onClick={openCreate}>
+            <Plus className="h-3.5 w-3.5" />
+            Compromisso
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <CalendarFilters
-        filterTypes={filterTypes}
-        filterProject={filterProject}
-        projects={projects}
-        onChange={(types, project) => { setFilterTypes(types); setFilterProject(project) }}
-      />
+      {/* Filters — scrollável horizontalmente no mobile */}
+      <div className="overflow-x-auto shrink-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <CalendarFilters
+          filterTypes={filterTypes}
+          filterProject={filterProject}
+          projects={projects}
+          onChange={(types, project) => { setFilterTypes(types); setFilterProject(project) }}
+        />
+      </div>
 
-      {/* Main area */}
-      <div className="flex min-h-0 flex-1 gap-3">
+      {/* Main area — coluna no mobile, linha no desktop */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:min-h-0 lg:flex-1">
         {/* Calendar */}
-        <div className="nexo-calendar min-h-0 flex-1 rounded-xl border border-[#1f1f1f] bg-[#080808] overflow-hidden">
+        <div className="nexo-calendar h-[400px] sm:h-[480px] lg:h-auto lg:min-h-0 lg:flex-1 rounded-xl border border-[#1f1f1f] bg-[#080808] overflow-hidden">
           <CalendarCore
             events={fcEvents}
             initialView={view}
@@ -360,8 +364,8 @@ export function CalendarClient({ initialEvents, projects, highlightId }: Calenda
           />
         </div>
 
-        {/* Day agenda sidebar */}
-        <div className="w-64 shrink-0 min-h-0">
+        {/* Day agenda panel — altura fixa no mobile, lateral no desktop */}
+        <div className="h-52 sm:h-60 lg:h-auto lg:w-64 lg:shrink-0 lg:min-h-0">
           <DayAgendaPanel
             events={events}
             selectedDate={selectedDate}

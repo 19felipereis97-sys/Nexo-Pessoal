@@ -26,9 +26,13 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 mx-auto max-w-[1500px]">
-      <PageHeader title="Agenda" description="Visualize e gerencie seus compromissos" />
-      <div className="flex-1 min-h-0">
+    <div className="flex flex-col gap-4 mx-auto max-w-[1500px] lg:h-full">
+      <PageHeader
+        title="Agenda"
+        description="Visualize e gerencie seus compromissos"
+        className="mb-0 lg:mb-2"
+      />
+      <div className="lg:flex-1 lg:min-h-0">
         <CalendarClient initialEvents={events} projects={projects} highlightId={params.highlight} />
       </div>
     </div>
