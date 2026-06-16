@@ -127,3 +127,23 @@ export async function updateTask(taskId: string, input: Partial<CreateTaskInput>
   revalidate()
   return { error: null }
 }
+
+
+export async function updateTaskChecklist(
+  taskId: string,
+  checklist: Array<{ id: string; text: string; done: boolean }>,
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Não autenticado' }
+
+  const { error } = await supabase
+    .from('tasks')
+    .update({ checklist, updated_at: new Date().toISOString() } as never)
+    .eq('id', taskId)
+    .eq('user_id', user.id)
+
+  if (error) return { error: error.message }
+  revalidate()
+  return { error: null }
+}

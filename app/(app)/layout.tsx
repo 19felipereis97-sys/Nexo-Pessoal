@@ -9,41 +9,35 @@ import { MobileNav } from '@/components/layout/mobile-nav'
 import { getNotificationsData } from '@/lib/data/notifications'
 import type { Notification, Profile } from '@/lib/supabase/types'
 
-function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  return !!(url && key && url.startsWith('http') && key.length > 20)
-}
-
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  // Auth guard — middleware handles the edge case, this is a defense-in-depth check
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
   let profile: Profile | null = null
   let notifications: Notification[] = []
   let unreadCount = 0
 
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = await createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+  try {
+    await ensureProfile(user.id, user.email ?? '', user.user_metadata?.full_name)
 
-      if (!user) {
-        redirect('/login')
-      }
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
 
-      await ensureProfile(user.id, user.email ?? '', user.user_metadata?.full_name)
-
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      profile = data as Profile | null
-      const notificationData = await getNotificationsData()
-      notifications = notificationData.notifications
-      unreadCount = notificationData.unreadCount
-    } catch {
-      // Falha silenciosa em dev quando o banco ainda não está configurado
-    }
+    profile = data as Profile | null
+    const notificationData = await getNotificationsData()
+    notifications = notificationData.notifications
+    unreadCount = notificationData.unreadCount
+  } catch {
+    // Non-fatal: profile/notification fetch failures render the shell without them.
+    // Auth is already validated above — this catch cannot bypass authentication.
   }
 
   return (

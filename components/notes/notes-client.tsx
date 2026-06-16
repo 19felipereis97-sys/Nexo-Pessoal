@@ -2,7 +2,8 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Archive, ArchiveRestore, CheckSquare, FileText, Grid2X2, Lightbulb, List, Pin, PinOff, Plus, Search, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, CheckSquare, ExternalLink, FileText, Grid2X2, Lightbulb, List, Pin, PinOff, Plus, Search, Trash2 } from 'lucide-react'
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
@@ -98,8 +99,90 @@ function NoteDrawer({ note, projectMap, taskMap, meetingMap, pending, onClose, o
   note: Note | null; projectMap: Record<string, string>; taskMap: Record<string, string>; meetingMap: Record<string, string>; pending: boolean
   onClose: () => void; onEdit: (note: Note) => void; onPin: (note: Note) => void; onArchive: (note: Note) => void; onDelete: (note: Note) => void; onTask: (note: Note) => void; onDecision: (note: Note) => void
 }) {
+  const router = useRouter()
   if (!note) return null
-  return <Drawer open onClose={onClose} title="Detalhes da nota" description={NOTE_TYPE_LABEL[note.type] ?? note.type} width="w-full sm:w-[560px]"><div className="flex flex-col gap-5"><div className="flex flex-wrap gap-2"><Badge variant={NOTE_TYPE_VARIANT[note.type]}>{NOTE_TYPE_LABEL[note.type] ?? note.type}</Badge>{note.pinned && <Badge variant="accent">fixada</Badge>}{note.archived && <Badge variant="muted">arquivada</Badge>}</div><div><h2 className="text-lg font-semibold text-[#f5f5f5]">{note.title}</h2><p className="mt-1 text-xs text-[#737373]">Atualizada em {new Date(note.updated_at).toLocaleString('pt-BR')}</p></div><div className="rounded-xl border border-[#262626] bg-[#0d0d0d] p-4"><p className="whitespace-pre-wrap text-sm leading-relaxed text-[#d4d4d4]">{note.content || 'Sem conteúdo.'}</p></div><div className="grid gap-3 sm:grid-cols-3"><Info label="Projeto" value={note.project_id ? projectMap[note.project_id] ?? 'Projeto não encontrado' : 'Sem vínculo'} /><Info label="Tarefa" value={note.task_id ? taskMap[note.task_id] ?? 'Tarefa não encontrada' : 'Sem vínculo'} /><Info label="Reunião" value={note.meeting_id ? meetingMap[note.meeting_id] ?? 'Reunião não encontrada' : 'Sem vínculo'} /></div><div className="flex flex-col gap-2 border-t border-[#262626] pt-4"><div className="grid gap-2 sm:grid-cols-2"><Button variant="accent" loading={pending} onClick={() => onTask(note)} disabled={!!note.converted_task_id}><CheckSquare className="h-4 w-4" />{note.converted_task_id ? 'Tarefa criada' : 'Transformar em tarefa'}</Button><Button variant="secondary" loading={pending} onClick={() => onDecision(note)} disabled={!!note.converted_decision_id}><Lightbulb className="h-4 w-4" />{note.converted_decision_id ? 'Decisão criada' : 'Transformar em decisão'}</Button></div><div className="flex flex-wrap gap-2"><Button variant="secondary" onClick={() => onEdit(note)}>Editar</Button><Button variant="secondary" onClick={() => onPin(note)}>{note.pinned ? 'Desafixar' : 'Fixar'}</Button><Button variant="secondary" onClick={() => onArchive(note)}>{note.archived ? 'Desarquivar' : 'Arquivar'}</Button><Button variant="danger" onClick={() => onDelete(note)}>Excluir</Button></div></div></div></Drawer>
+  return (
+    <Drawer open onClose={onClose} title="Detalhes da nota" description={NOTE_TYPE_LABEL[note.type] ?? note.type} width="w-full sm:w-[560px]">
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant={NOTE_TYPE_VARIANT[note.type]}>{NOTE_TYPE_LABEL[note.type] ?? note.type}</Badge>
+          {note.pinned && <Badge variant="accent">fixada</Badge>}
+          {note.archived && <Badge variant="muted">arquivada</Badge>}
+        </div>
+
+        <div>
+          <h2 className="text-lg font-semibold text-[#f5f5f5]">{note.title}</h2>
+          <p className="mt-1 text-xs text-[#737373]">Atualizada em {new Date(note.updated_at).toLocaleString('pt-BR')}</p>
+        </div>
+
+        <div className="rounded-xl border border-[#262626] bg-[#0d0d0d] p-4">
+          {note.content?.trim() ? (
+            <MarkdownRenderer content={note.content} />
+          ) : (
+            <p className="text-sm text-[#333]">Sem conteúdo.</p>
+          )}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <InfoLink
+            label="Projeto"
+            value={note.project_id ? (projectMap[note.project_id] ?? 'Projeto não encontrado') : 'Sem vínculo'}
+            href={note.project_id ? `/projects/${note.project_id}` : undefined}
+            onClick={note.project_id ? () => { onClose(); router.push(`/projects/${note.project_id}`) } : undefined}
+          />
+          <InfoLink
+            label="Tarefa"
+            value={note.task_id ? (taskMap[note.task_id] ?? 'Tarefa não encontrada') : 'Sem vínculo'}
+            href={note.task_id ? `/tasks` : undefined}
+            onClick={note.task_id ? () => { onClose(); router.push(`/tasks?highlight=${note.task_id}`) } : undefined}
+          />
+          <InfoLink
+            label="Reunião"
+            value={note.meeting_id ? (meetingMap[note.meeting_id] ?? 'Reunião não encontrada') : 'Sem vínculo'}
+            href={note.meeting_id ? `/meetings` : undefined}
+            onClick={note.meeting_id ? () => { onClose(); router.push(`/meetings?highlight=${note.meeting_id}`) } : undefined}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-[#262626] pt-4">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button variant="accent" loading={pending} onClick={() => onTask(note)} disabled={!!note.converted_task_id}>
+              <CheckSquare className="h-4 w-4" />
+              {note.converted_task_id ? 'Tarefa criada' : 'Transformar em tarefa'}
+            </Button>
+            <Button variant="secondary" loading={pending} onClick={() => onDecision(note)} disabled={!!note.converted_decision_id}>
+              <Lightbulb className="h-4 w-4" />
+              {note.converted_decision_id ? 'Decisão criada' : 'Transformar em decisão'}
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => onEdit(note)}>Editar</Button>
+            <Button variant="secondary" onClick={() => onPin(note)}>{note.pinned ? 'Desafixar' : 'Fixar'}</Button>
+            <Button variant="secondary" onClick={() => onArchive(note)}>{note.archived ? 'Desarquivar' : 'Arquivar'}</Button>
+            <Button variant="danger" onClick={() => onDelete(note)}>Excluir</Button>
+          </div>
+        </div>
+      </div>
+    </Drawer>
+  )
 }
 
-function Info({ label, value }: { label: string; value: string }) { return <div className="rounded-lg border border-[#262626] bg-[#111] p-3"><p className="text-[10px] uppercase tracking-wide text-[#525252]">{label}</p><p className="mt-1 truncate text-xs text-[#a3a3a3]">{value}</p></div> }
+function InfoLink({ label, value, onClick }: { label: string; value: string; href?: string; onClick?: () => void }) {
+  return (
+    <div className="rounded-lg border border-[#262626] bg-[#111] p-3">
+      <p className="text-[10px] uppercase tracking-wide text-[#525252]">{label}</p>
+      {onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          className="mt-1 flex items-center gap-1 text-left text-xs text-[#c9a227] hover:text-[#e0b83a] transition-colors"
+        >
+          <span className="truncate">{value}</span>
+          <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+        </button>
+      ) : (
+        <p className="mt-1 truncate text-xs text-[#525252]">{value}</p>
+      )}
+    </div>
+  )
+}

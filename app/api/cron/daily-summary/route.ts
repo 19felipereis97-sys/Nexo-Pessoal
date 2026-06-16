@@ -7,8 +7,10 @@ import type { Database } from '@/lib/supabase/types'
 // Runs daily via Vercel Cron (vercel.json schedule: "0 10 * * *" = 7am BRT)
 // Requires SUPABASE_SERVICE_ROLE_KEY and CRON_SECRET in environment variables.
 export async function GET(req: NextRequest) {
+  const cronSecret = process.env.CRON_SECRET
   const secret = req.headers.get('authorization')?.replace('Bearer ', '')
-  if (secret !== process.env.CRON_SECRET) {
+  // Explicit check: both must be defined and equal (prevents undefined === undefined bypass)
+  if (!cronSecret || !secret || secret !== cronSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

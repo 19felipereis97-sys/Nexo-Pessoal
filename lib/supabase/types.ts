@@ -257,6 +257,7 @@ export interface Database {
           due_time: string | null
           completed_at: string | null
           execution_order: number | null
+          checklist: Array<{ id: string; text: string; done: boolean }>
           created_at: string
           updated_at: string
         }
@@ -273,6 +274,7 @@ export interface Database {
           due_time?: string | null
           completed_at?: string | null
           execution_order?: number | null
+          checklist?: Array<{ id: string; text: string; done: boolean }>
           created_at?: string
           updated_at?: string
         }
@@ -287,6 +289,7 @@ export interface Database {
           due_time?: string | null
           completed_at?: string | null
           execution_order?: number | null
+          checklist?: Array<{ id: string; text: string; done: boolean }>
           updated_at?: string
         }
         Relationships: [

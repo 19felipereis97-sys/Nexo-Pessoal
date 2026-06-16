@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { ALLOWED_EXTENSIONS, MAX_FILE_SIZE } from '@/lib/utils/documents'
+import type { AllowedExtension } from '@/lib/utils/documents'
 
 export interface SaveDocumentInput {
   id: string
@@ -41,6 +43,15 @@ export async function saveDocument(input: SaveDocumentInput) {
   if (!user) return { error: 'Não autenticado', document: null }
 
   if (!input.title.trim()) return { error: 'Título é obrigatório', document: null }
+
+  // Server-side file validation (defense-in-depth — client also validates)
+  const ext = input.file_name.split('.').pop()?.toLowerCase() ?? ''
+  if (!ALLOWED_EXTENSIONS.includes(ext as AllowedExtension)) {
+    return { error: `Extensão .${ext} não permitida.`, document: null }
+  }
+  if (input.file_size && input.file_size > MAX_FILE_SIZE) {
+    return { error: 'Arquivo muito grande. Máximo 50 MB.', document: null }
+  }
 
   const { data, error } = await supabase
     .from('documents')

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useOptimistic, useState, useTransition } from 'react'
 import {
   X,
   Edit2,
@@ -12,11 +12,15 @@ import {
   AlignLeft,
   Clock,
   AlertTriangle,
+  CheckSquare,
+  Plus,
+  Trash,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip } from '@/components/ui/tooltip'
 import type { Task } from '@/lib/supabase/types'
+import { updateTaskChecklist } from '@/lib/actions/tasks'
 import {
   PRIORITY_LABEL,
   PRIORITY_DOT,
@@ -247,6 +251,9 @@ export function TaskDetailDrawer({
                   </p>
                 </div>
               )}
+
+              {/* Checklist */}
+              <TaskChecklist taskId={task.id} initialItems={task.checklist ?? []} />
             </div>
 
             {/* Footer actions */}
@@ -292,5 +299,108 @@ export function TaskDetailDrawer({
         )}
       </div>
     </>
+  )
+}
+
+type ChecklistItem = { id: string; text: string; done: boolean }
+
+function TaskChecklist({ taskId, initialItems }: { taskId: string; initialItems: ChecklistItem[] }) {
+  const [items, setItems] = useOptimistic<ChecklistItem[]>(initialItems)
+  const [newText, setNewText] = useState('')
+  const [, startTransition] = useTransition()
+
+  function save(next: ChecklistItem[]) {
+    startTransition(async () => {
+      setItems(next)
+      await updateTaskChecklist(taskId, next)
+    })
+  }
+
+  function addItem() {
+    if (!newText.trim()) return
+    const next = [...items, { id: crypto.randomUUID(), text: newText.trim(), done: false }]
+    setNewText('')
+    save(next)
+  }
+
+  function toggle(id: string) {
+    save(items.map((item) => item.id === id ? { ...item, done: !item.done } : item))
+  }
+
+  function remove(id: string) {
+    save(items.filter((item) => item.id !== id))
+  }
+
+  const done = items.filter((i) => i.done).length
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-1.5">
+        <CheckSquare className="h-3.5 w-3.5 text-[#525252]" />
+        <label className="text-[10px] font-semibold uppercase tracking-wider text-[#525252]">
+          Subtarefas
+        </label>
+        {items.length > 0 && (
+          <span className="ml-auto text-[10px] text-[#525252]">{done}/{items.length}</span>
+        )}
+      </div>
+
+      {items.length > 0 && (
+        <div className="h-1 w-full overflow-hidden rounded-full bg-[#1a1a1a]">
+          <div
+            className="h-full rounded-full bg-[#22c55e] transition-all duration-300"
+            style={{ width: `${Math.round((done / items.length) * 100)}%` }}
+          />
+        </div>
+      )}
+
+      <div className="space-y-1">
+        {items.map((item) => (
+          <div key={item.id} className="group flex items-center gap-2 rounded-lg border border-[#1f1f1f] bg-[#111111] px-2.5 py-1.5">
+            <button
+              type="button"
+              onClick={() => toggle(item.id)}
+              className="shrink-0 text-[#525252] transition-colors hover:text-[#22c55e]"
+            >
+              {item.done
+                ? <CheckCircle2 className="h-4 w-4 text-[#22c55e]" />
+                : <Circle className="h-4 w-4" />
+              }
+            </button>
+            <span className={cn(
+              'flex-1 text-sm leading-snug',
+              item.done ? 'line-through text-[#525252]' : 'text-[#d4d4d4]',
+            )}>
+              {item.text}
+            </span>
+            <button
+              type="button"
+              onClick={() => remove(item.id)}
+              className="shrink-0 opacity-0 group-hover:opacity-100 text-[#525252] transition-all hover:text-[#ef4444]"
+            >
+              <Trash className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          value={newText}
+          onChange={(e) => setNewText(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addItem() } }}
+          placeholder="Adicionar subtarefa..."
+          className="flex-1 rounded-lg border border-[#1f1f1f] bg-[#0d0d0d] px-2.5 py-1.5 text-sm text-[#f5f5f5] placeholder:text-[#333] focus:border-[#c9a227]/40 focus:outline-none transition-colors"
+        />
+        <button
+          type="button"
+          onClick={addItem}
+          disabled={!newText.trim()}
+          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#1f1f1f] bg-[#111111] text-[#525252] transition-colors hover:border-[#c9a227]/30 hover:text-[#c9a227] disabled:opacity-30"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
   )
 }
