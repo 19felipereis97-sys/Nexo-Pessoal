@@ -1,26 +1,332 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --background-soft: #0a0a0a;
+  --surface: #111111;
+  --surface-elevated: #171717;
+  --border: #262626;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --accent: #c9a227;
+  --accent-hover: #d6b43a;
+  --success: #22c55e;
+  --warning: #eab308;
+  --danger: #ef4444;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background-soft: var(--background-soft);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+::selection {
+  background: rgba(201, 162, 39, 0.25);
+  color: var(--text-primary);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Premium surfaces ───────────────────────────────────────── */
+
+/* Subtle radial gold aura, used on the dashboard backdrop */
+.nexo-aura {
+  position: relative;
+}
+.nexo-aura::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(201, 162, 39, 0.06), transparent 60%),
+    radial-gradient(80% 50% at 100% 0%, rgba(201, 162, 39, 0.03), transparent 55%);
+  z-index: 0;
+}
+
+.nexo-dashboard-backdrop {
+  background:
+    linear-gradient(135deg, transparent 0 74%, rgba(201, 162, 39, 0.035) 74.2%, transparent 74.5%),
+    radial-gradient(80% 45% at 50% -12%, rgba(201, 162, 39, 0.11), transparent 62%),
+    #050505;
+}
+
+.nexo-dashboard-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18%),
+    rgba(8, 8, 8, 0.94);
+  border: 1px solid #211f19;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.nexo-dashboard-intro {
+  background: linear-gradient(90deg, rgba(201, 162, 39, 0.07), transparent 55%);
+  border-left: 2px solid rgba(201, 162, 39, 0.62);
+}
+
+/* Elevated card surface with a faint top sheen and soft depth */
+.nexo-surface {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 52%),
+    #10100f;
+  border: 1px solid #292720;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -20px rgba(201, 162, 39, 0.24);
+}
+
+/* Highlight card — faint gold hairline border for featured areas */
+.nexo-surface-accent {
+  background:
+    linear-gradient(180deg, rgba(201, 162, 39, 0.05), transparent 45%),
+    #11100e;
+  border: 1px solid rgba(201, 162, 39, 0.22);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 28px -18px rgba(201, 162, 39, 0.25);
+}
+
+.nexo-metric-card {
+  position: relative;
+  overflow: hidden;
+}
+.nexo-metric-card::after {
+  content: '';
+  position: absolute;
+  right: -28px;
+  bottom: -38px;
+  width: 90px;
+  height: 90px;
+  border: 1px solid rgba(201, 162, 39, 0.07);
+  border-radius: 999px;
+}
+
+.nexo-section-card,
+.nexo-rail-card {
+  box-shadow: 0 12px 32px -24px rgba(201, 162, 39, 0.28);
+}
+
+/* Hover lift used by interactive cards */
+.nexo-hover {
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.nexo-hover:hover {
+  border-color: rgba(201, 162, 39, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -18px rgba(201, 162, 39, 0.2);
+}
+
+@keyframes nexo-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.nexo-fade-in {
+  animation: nexo-fade-in 250ms ease both;
+}
+
+/* ── FullCalendar dark theme ─────────────────────────────────── */
+.nexo-calendar .fc {
+  --fc-border-color: #1a1a1a;
+  --fc-today-bg-color: rgba(201, 162, 39, 0.04);
+  --fc-neutral-bg-color: #080808;
+  --fc-page-bg-color: transparent;
+  --fc-now-indicator-color: #c9a227;
+  --fc-highlight-color: rgba(201, 162, 39, 0.07);
+  --fc-non-business-color: rgba(0, 0, 0, 0.02);
+  --fc-event-text-color: #f5f5f5;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.8125rem;
+  height: 100%;
+}
+
+.nexo-calendar .fc-theme-standard td,
+.nexo-calendar .fc-theme-standard th {
+  border-color: #1a1a1a;
+}
+
+.nexo-calendar .fc-theme-standard .fc-scrollgrid {
+  border-color: #1a1a1a;
+  border-radius: 0;
+}
+
+.nexo-calendar .fc .fc-col-header-cell-cushion {
+  color: #525252;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  padding: 10px 4px;
+}
+
+.nexo-calendar .fc .fc-daygrid-day-number {
+  color: #737373;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  padding: 6px 8px;
+}
+
+.nexo-calendar .fc .fc-day-today .fc-daygrid-day-number {
+  color: #c9a227;
+  font-weight: 700;
+}
+
+.nexo-calendar .fc .fc-daygrid-day-top {
+  flex-direction: row;
+}
+
+.nexo-calendar .fc .fc-timegrid-slot {
+  height: 44px;
+  border-color: #111111;
+}
+
+.nexo-calendar .fc .fc-timegrid-slot-minor {
+  border-color: #0d0d0d;
+}
+
+.nexo-calendar .fc .fc-timegrid-slot-label-cushion {
+  color: #444;
+  font-size: 0.6875rem;
+  padding-right: 8px;
+}
+
+.nexo-calendar .fc .fc-timegrid-now-indicator-line {
+  border-color: #c9a227;
+  border-width: 2px;
+}
+
+.nexo-calendar .fc .fc-timegrid-now-indicator-arrow {
+  border-color: #c9a227;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.nexo-calendar .fc .fc-event {
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  border: none !important;
+  cursor: pointer;
+  transition: opacity 150ms ease, filter 150ms ease;
+}
+
+.nexo-calendar .fc .fc-event:hover {
+  filter: brightness(1.15);
+}
+
+.nexo-calendar .fc .fc-event-main {
+  padding: 2px 5px;
+  overflow: hidden;
+}
+
+.nexo-calendar .fc .fc-daygrid-event {
+  border-radius: 4px;
+  margin-bottom: 1px;
+}
+
+.nexo-calendar .fc .fc-more-link {
+  color: #c9a227;
+  font-size: 0.6875rem;
+  padding: 0 4px;
+}
+
+.nexo-calendar .fc .fc-popover {
+  background: #111111;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  z-index: 200;
+}
+
+.nexo-calendar .fc .fc-popover-header {
+  background: #0d0d0d;
+  border-bottom: 1px solid #1f1f1f;
+  border-radius: 10px 10px 0 0;
+  padding: 8px 12px;
+  color: #f5f5f5;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.nexo-calendar .fc .fc-popover-close {
+  color: #737373;
+}
+
+.nexo-calendar .fc .fc-highlight {
+  background: rgba(201, 162, 39, 0.07);
+  border-radius: 4px;
+}
+
+.nexo-calendar .fc .fc-timegrid-col.fc-day-today {
+  background: rgba(201, 162, 39, 0.025);
+}
+
+.nexo-calendar .fc .fc-daygrid-day.fc-day-today {
+  background: rgba(201, 162, 39, 0.03);
+}
+
+.nexo-calendar .fc .fc-event-resizer {
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.nexo-calendar .fc .fc-event:hover .fc-event-resizer {
+  opacity: 1;
+}
+
+/* Deadline / prazo events — red pulsing border */
+.nexo-calendar .fc .fc-event[data-type="prazo"] {
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.4);
 }
