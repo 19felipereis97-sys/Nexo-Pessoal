@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { todayISO, saoPauloDayBoundsUTC } from '@/lib/utils/date'
+import { addDaysISO, todayISO, saoPauloDayBoundsUTC } from '@/lib/utils/date'
 
 export interface AIContextData {
   today: string
@@ -7,9 +7,11 @@ export interface AIContextData {
   overdueTasks: Array<{ title: string; priority: string; due_date: string }>
   criticalTasks: Array<{ title: string; status: string; due_date: string | null }>
   todayEvents: Array<{ title: string; start_at: string; end_at: string | null; type: string | null }>
+  weekEvents: Array<{ title: string; start_at: string; type: string | null }>
   activeProjects: Array<{ name: string; status: string; progress: number; due_date: string | null; last_updated: string }>
   pendingMeetingsWithoutMinutes: Array<{ title: string; scheduled_at: string }>
-  recentNotes: Array<{ title: string; type: string }>
+  recentNotes: Array<{ title: string; type: string; snippet: string | null }>
+  completedThisWeek: Array<{ title: string; priority: string }>
 }
 
 const DONE = ['concluida', 'cancelado', 'concluido', 'arquivado']
@@ -22,8 +24,10 @@ export async function buildAIContext(): Promise<AIContextData> {
   const today = todayISO()
   const nowISO = new Date().toISOString()
   const { start: dayStart, end: dayEnd } = saoPauloDayBoundsUTC(today)
+  const weekEnd = addDaysISO(today, 7)
+  const weekStart = addDaysISO(today, -7)
 
-  const [tasksRes, eventsRes, projectsRes, meetingsRes, notesRes] = await Promise.all([
+  const [tasksRes, completedRes, todayEventsRes, weekEventsRes, projectsRes, meetingsRes, notesRes] = await Promise.all([
     supabase
       .from('tasks')
       .select('title,status,priority,due_date,due_time')
@@ -32,6 +36,14 @@ export async function buildAIContext(): Promise<AIContextData> {
       .order('due_date', { ascending: true })
       .limit(60),
     supabase
+      .from('tasks')
+      .select('title,priority,completed_at')
+      .eq('user_id', user.id)
+      .eq('status', 'concluida')
+      .gte('completed_at', weekStart)
+      .order('completed_at', { ascending: false })
+      .limit(20),
+    supabase
       .from('calendar_events')
       .select('title,start_at,end_at,type')
       .eq('user_id', user.id)
@@ -39,6 +51,14 @@ export async function buildAIContext(): Promise<AIContextData> {
       .lte('start_at', dayEnd)
       .order('start_at')
       .limit(15),
+    supabase
+      .from('calendar_events')
+      .select('title,start_at,type')
+      .eq('user_id', user.id)
+      .gt('start_at', dayEnd)
+      .lte('start_at', new Date(`${weekEnd}T23:59:59Z`).toISOString())
+      .order('start_at')
+      .limit(20),
     supabase
       .from('projects')
       .select('name,status,progress,due_date,updated_at')
@@ -55,7 +75,7 @@ export async function buildAIContext(): Promise<AIContextData> {
       .limit(20),
     supabase
       .from('notes')
-      .select('title,type')
+      .select('title,type,content')
       .eq('user_id', user.id)
       .eq('archived', false)
       .order('created_at', { ascending: false })
@@ -78,10 +98,16 @@ export async function buildAIContext(): Promise<AIContextData> {
     .slice(0, 8)
     .map((t) => ({ title: t.title, status: t.status, due_date: t.due_date }))
 
-  const todayEvents = (eventsRes.data ?? []).map((e) => ({
+  const todayEvents = (todayEventsRes.data ?? []).map((e) => ({
     title: e.title,
     start_at: e.start_at,
     end_at: e.end_at,
+    type: e.type,
+  }))
+
+  const weekEvents = (weekEventsRes.data ?? []).map((e) => ({
+    title: e.title,
+    start_at: e.start_at,
     type: e.type,
   }))
 
@@ -98,7 +124,16 @@ export async function buildAIContext(): Promise<AIContextData> {
     .slice(0, 5)
     .map((m) => ({ title: m.title, scheduled_at: m.scheduled_at }))
 
-  const recentNotes = (notesRes.data ?? []).map((n) => ({ title: n.title, type: n.type }))
+  const recentNotes = (notesRes.data ?? []).map((n) => ({
+    title: n.title,
+    type: n.type,
+    snippet: n.content ? n.content.replace(/\s+/g, ' ').slice(0, 150).trim() : null,
+  }))
+
+  const completedThisWeek = (completedRes.data ?? []).map((t) => ({
+    title: t.title,
+    priority: t.priority,
+  }))
 
   return {
     today,
@@ -106,9 +141,11 @@ export async function buildAIContext(): Promise<AIContextData> {
     overdueTasks,
     criticalTasks,
     todayEvents,
+    weekEvents,
     activeProjects,
     pendingMeetingsWithoutMinutes,
     recentNotes,
+    completedThisWeek,
   }
 }
 
@@ -143,6 +180,12 @@ export function formatContextForPrompt(ctx: AIContextData): string {
     lines.push('')
   }
 
+  if (ctx.completedThisWeek.length) {
+    lines.push(`CONCLUÍDAS NOS ÚLTIMOS 7 DIAS (${ctx.completedThisWeek.length}):`)
+    ctx.completedThisWeek.forEach((t) => lines.push(`  - ${t.title}`))
+    lines.push('')
+  }
+
   if (ctx.todayEvents.length) {
     lines.push(`AGENDA DE HOJE (${ctx.todayEvents.length}):`)
     ctx.todayEvents.forEach((e) => {
@@ -156,6 +199,26 @@ export function formatContextForPrompt(ctx: AIContextData): string {
     lines.push('')
   } else {
     lines.push('AGENDA DE HOJE: sem compromissos\n')
+  }
+
+  if (ctx.weekEvents.length) {
+    lines.push(`AGENDA DA SEMANA - PRÓXIMOS DIAS (${ctx.weekEvents.length}):`)
+    ctx.weekEvents.forEach((e) => {
+      const dt = new Date(e.start_at)
+      const day = dt.toLocaleDateString('pt-BR', {
+        weekday: 'short',
+        day: '2-digit',
+        month: '2-digit',
+        timeZone: 'America/Sao_Paulo',
+      })
+      const time = dt.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo',
+      })
+      lines.push(`  - ${day} ${time} ${e.title}${e.type ? ` [${e.type}]` : ''}`)
+    })
+    lines.push('')
   }
 
   if (ctx.activeProjects.length) {
@@ -180,7 +243,10 @@ export function formatContextForPrompt(ctx: AIContextData): string {
 
   if (ctx.recentNotes.length) {
     lines.push(`NOTAS RECENTES (${ctx.recentNotes.length}):`)
-    ctx.recentNotes.forEach((n) => lines.push(`  - [${n.type}] ${n.title}`))
+    ctx.recentNotes.forEach((n) => {
+      const snippet = n.snippet ? ` — "${n.snippet}${n.snippet.length >= 150 ? '…' : ''}"` : ''
+      lines.push(`  - [${n.type}] ${n.title}${snippet}`)
+    })
     lines.push('')
   }
 
