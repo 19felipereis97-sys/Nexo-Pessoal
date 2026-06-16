@@ -110,7 +110,7 @@ export function TaskCard({ task, projectName, isDragOverlay, onClick, onToggleCo
           {projectName && (
             <span className="flex items-center gap-1 rounded-md bg-[#1a1a1a] px-1.5 py-0.5 text-[10px] text-[#525252]">
               <FolderOpen className="h-2.5 w-2.5" />
-              <span className="max-w-[80px] truncate">{projectName}</span>
+              <span className="truncate">{projectName}</span>
             </span>
           )}
         </div>

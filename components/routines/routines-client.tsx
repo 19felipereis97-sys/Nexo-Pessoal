@@ -144,7 +144,7 @@ function WeekView({ routines, logs, weekStart, today, onToggle, onOpenRoutine, t
             <tr key={routine.id} className="group hover:bg-[#141414]">
               <td className="py-2 pr-3">
                 <button onClick={() => onOpenRoutine(routine)} className="text-left">
-                  <p className="text-sm text-[#e5e5e5] hover:text-[#c9a227] transition-colors truncate max-w-[180px]">{routine.title}</p>
+                  <p className="text-sm text-[#e5e5e5] hover:text-[#c9a227] transition-colors">{routine.title}</p>
                 </button>
               </td>
               {days.map((d) => {

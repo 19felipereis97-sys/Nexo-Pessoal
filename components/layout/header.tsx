@@ -42,10 +42,10 @@ export function Header({ profile, notifications = [], unreadCount = 0 }: HeaderP
 
   return (
     <>
-      <header className="flex h-14 items-center justify-between gap-3 border-b border-[#262626] bg-[#0a0a0a]/80 px-4 shadow-[0_1px_0_0_rgba(255,255,255,0.02)] backdrop-blur-sm">
+      <header className="relative z-20 flex h-14 items-center justify-between gap-3 border-b border-[#262626] bg-[#0a0a0a]/80 px-4 shadow-[0_1px_0_0_rgba(255,255,255,0.02)] backdrop-blur-sm">
         <button onClick={() => setSearchOpen(true)} className="group flex max-w-sm flex-1 items-center gap-2 rounded-lg border border-[#262626] bg-[#111111] px-3 py-2 text-sm text-[#737373] transition-all hover:border-[#c9a227]/30 hover:text-[#a3a3a3]">
           <Search className="h-3.5 w-3.5 shrink-0 transition-colors group-hover:text-[#c9a227]" />
-          <span>Buscar tarefas, projetos, notas...</span>
+          <span className="hidden sm:block">Buscar tarefas, projetos, notas...</span>
           <kbd className="ml-auto hidden items-center gap-1 rounded border border-[#262626] px-1 font-mono text-[10px] text-[#737373] sm:inline-flex">Ctrl K</kbd>
         </button>
 
@@ -66,8 +66,8 @@ export function Header({ profile, notifications = [], unreadCount = 0 }: HeaderP
 
             {userMenuOpen && (
               <>
-                <div className="fixed inset-0 z-30" onClick={() => setUserMenuOpen(false)} aria-hidden="true" />
-                <div className="absolute right-0 top-11 z-40 w-52 rounded-xl border border-[#262626] bg-[#111111] p-1.5 shadow-2xl">
+                <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} aria-hidden="true" />
+                <div className="fixed right-2 top-14 z-50 w-52 rounded-xl border border-[#262626] bg-[#111111] p-1.5 shadow-2xl sm:absolute sm:right-0 sm:top-11">
                   <div className="mb-1 px-3 py-2">
                     <p className="truncate text-xs font-medium text-[#f5f5f5]">{fullName}</p>
                     <p className="truncate text-[10px] text-[#737373]">{displayEmail}</p>

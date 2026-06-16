@@ -82,8 +82,8 @@ export function NotificationsMenu({ initialNotifications, initialUnreadCount }: 
       </PremiumTooltip>
       {open && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="absolute right-0 top-11 z-40 flex max-h-[75vh] w-[min(92vw,420px)] flex-col rounded-xl border border-[#262626] bg-[#111111] shadow-2xl">
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="fixed inset-x-2 top-14 z-50 flex max-h-[65vh] flex-col rounded-xl border border-[#262626] bg-[#111111] shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:max-h-[75vh] sm:w-[420px]">
             <div className="flex items-center justify-between border-b border-[#262626] p-3">
               <div>
                 <p className="text-sm font-semibold text-[#f5f5f5]">Notificações</p>

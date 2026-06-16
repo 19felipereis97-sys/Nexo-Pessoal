@@ -54,8 +54,8 @@ export function QuickCreateMenu() {
 
         {open && (
           <>
-            <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} aria-hidden="true" />
-            <div className="absolute right-0 top-11 z-40 w-52 rounded-xl border border-[#262626] bg-[#111111] p-1.5 shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-150">
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
+            <div className="fixed right-2 top-14 z-50 w-52 rounded-xl border border-[#262626] bg-[#111111] p-1.5 shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-150 sm:absolute sm:right-0 sm:top-11">
               <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#525252]">Criar novo</p>
               {menuItems.map((item) => (
                 <button

@@ -39,7 +39,7 @@ export function DashboardMetricCard({
         type="button"
         onClick={onClick}
         className={cn(
-          'nexo-surface nexo-metric-card nexo-hover group flex min-h-[132px] w-full flex-col gap-3 rounded-xl p-3.5 text-left',
+          'nexo-surface nexo-metric-card nexo-hover group flex min-h-[110px] w-full flex-col gap-2 rounded-xl p-2.5 text-left sm:min-h-[132px] sm:gap-3 sm:p-3.5',
           onClick ? 'cursor-pointer' : 'cursor-default',
         )}
       >
@@ -58,7 +58,7 @@ export function DashboardMetricCard({
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <span className={cn('text-2xl font-bold leading-none', empty ? 'text-[#525252]' : 'text-[#f5f5f5]')}>
+          <span className={cn('text-xl font-bold leading-none sm:text-2xl', empty ? 'text-[#525252]' : 'text-[#f5f5f5]')}>
             {value}
           </span>
           <span className="text-xs text-[#737373]">{subtext}</span>

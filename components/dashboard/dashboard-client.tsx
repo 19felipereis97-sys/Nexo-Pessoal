@@ -171,29 +171,29 @@ export function DashboardClient({ data }: DashboardClientProps) {
       )}
 
       {/* Action buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <PremiumTooltip content="Veja um resumo ordenado de tarefas e compromissos de hoje" side="bottom">
-          <Button variant="accent" onClick={() => setModal('plan')}>
+          <Button variant="accent" onClick={() => setModal('plan')} className="w-full sm:w-auto">
             <Sparkles className="h-4 w-4" />
             Planejar meu dia
           </Button>
         </PremiumTooltip>
-        <Button variant="secondary" onClick={() => setModal('task')}>
+        <Button variant="secondary" onClick={() => setModal('task')} className="w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Adicionar tarefa
         </Button>
-        <Button variant="secondary" onClick={() => setModal('event')}>
+        <Button variant="secondary" onClick={() => setModal('event')} className="w-full sm:w-auto">
           <CalendarClock className="h-4 w-4" />
           Adicionar compromisso
         </Button>
-        <Button variant="secondary" onClick={() => setModal('note')}>
+        <Button variant="secondary" onClick={() => setModal('note')} className="w-full sm:w-auto">
           <FileText className="h-4 w-4" />
           Nota rápida
         </Button>
       </div>
 
       {/* Executive metric strip */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <DashboardMetricCard
           icon={ListTodo}
           label="Tarefas do dia"
