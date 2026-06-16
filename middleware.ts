@@ -46,11 +46,16 @@ export async function middleware(request: NextRequest) {
   )
 
   // Use getUser() — validates JWT with Supabase Auth server, not just local cookie
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
+    if (!user) {
+      const loginUrl = new URL('/login', request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+  } catch {
+    // If auth check fails (e.g. Supabase unreachable), let the layout handle it
+    return response
   }
 
   return response
