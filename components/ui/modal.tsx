@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
@@ -22,6 +23,13 @@ const sizeClasses = {
 }
 
 export function Modal({ open, onClose, title, description, children, size = 'md', className }: ModalProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -36,10 +44,10 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
     }
   }, [open, onClose])
 
-  if (!open) return null
+  if (!open || !mounted) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
@@ -50,14 +58,13 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         className={cn(
-          'relative z-10 flex w-full flex-col rounded-2xl border border-[#262626] bg-[#111111] shadow-2xl',
-          'max-h-[calc(100dvh-2rem)]',
+          'relative z-10 w-full max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border border-[#262626] bg-[#111111] shadow-2xl',
           'animate-in fade-in-0 zoom-in-95 duration-200',
           sizeClasses[size],
           className,
         )}
       >
-        <div className="flex shrink-0 items-start justify-between p-5 pb-0">
+        <div className="flex items-start justify-between p-5 pb-0">
           <div>
             {title && (
               <h2 id="modal-title" className="text-base font-semibold text-[#f5f5f5]">
@@ -70,8 +77,9 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        <div className="p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
