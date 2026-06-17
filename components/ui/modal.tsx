@@ -50,13 +50,14 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         className={cn(
-          'relative z-10 w-full rounded-2xl border border-[#262626] bg-[#111111] shadow-2xl',
+          'relative z-10 flex w-full flex-col rounded-2xl border border-[#262626] bg-[#111111] shadow-2xl',
+          'max-h-[calc(100dvh-2rem)]',
           'animate-in fade-in-0 zoom-in-95 duration-200',
           sizeClasses[size],
           className,
         )}
       >
-        <div className="flex items-start justify-between p-5 pb-0">
+        <div className="flex shrink-0 items-start justify-between p-5 pb-0">
           <div>
             {title && (
               <h2 id="modal-title" className="text-base font-semibold text-[#f5f5f5]">
@@ -69,7 +70,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="flex-1 overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   )

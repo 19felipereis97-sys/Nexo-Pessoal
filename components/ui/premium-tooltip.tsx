@@ -32,13 +32,24 @@ export function PremiumTooltip({
 }: PremiumTooltipProps) {
   const [visible, setVisible] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchedRef = useRef(false)
 
   const show = () => {
+    if (touchedRef.current) return
     timeoutRef.current = setTimeout(() => setVisible(true), delay)
   }
   const hide = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
     setVisible(false)
+  }
+  const showBriefly = () => {
+    touchedRef.current = true
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setVisible(true)
+    timeoutRef.current = setTimeout(() => {
+      setVisible(false)
+      touchedRef.current = false
+    }, 1500)
   }
 
   return (
@@ -48,6 +59,7 @@ export function PremiumTooltip({
       onMouseLeave={hide}
       onFocus={show}
       onBlur={hide}
+      onTouchEnd={showBriefly}
     >
       {children}
       {visible && (

@@ -68,7 +68,7 @@ export function MeetingFormModal({ open, meeting, projects, onClose, onSaved }: 
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={meeting ? 'Editar reunião' : 'Nova reunião'} size="lg" className="max-h-[92vh] overflow-y-auto">
+    <Modal open={open} onClose={onClose} title={meeting ? 'Editar reunião' : 'Nova reunião'} size="lg">
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <Input label="Título *" value={form.title} autoFocus onChange={(e) => setForm({ ...form, title: e.target.value })} />
