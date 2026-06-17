@@ -47,7 +47,10 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
   if (!open || !mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center px-4 pt-4"
+      style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+    >
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
@@ -58,11 +61,12 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         className={cn(
-          'relative z-10 w-full max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border border-[#262626] bg-[#111111] shadow-2xl',
+          'relative z-10 w-full overflow-y-auto rounded-2xl border border-[#262626] bg-[#111111] shadow-2xl',
           'animate-in fade-in-0 zoom-in-95 duration-200',
           sizeClasses[size],
           className,
         )}
+        style={{ maxHeight: 'calc(100dvh - 2rem - env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="flex items-start justify-between p-5 pb-0">
           <div>
